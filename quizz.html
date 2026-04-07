@@ -1,0 +1,1211 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Kohti Chat — Me connais-tu ?</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
+<style>
+
+:root {
+  --bg:        #0b141a;
+  --panel:     #202c33;
+  --bub-in:    #202c33;
+  --bub-out:   #005c4b;
+  --green:     #25d366;
+  --green-dim: #128c7e;
+  --teal:      #53bdeb;
+  --text:      #e9edef;
+  --muted:     #8696a0;
+  --div:       rgba(134,150,160,.15);
+  --rose:      #f48fb1;
+  --red:       #ef5350;
+  --ton:       #29b6f6;
+  --turg:      #ef5350;
+  --R:         7.5px;
+}
+
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{height:100dvh;overflow:hidden;}
+body{background:var(--bg);font-family:'Roboto',system-ui,sans-serif;color:var(--text);display:flex;justify-content:center;}
+
+/* ── SHELL ── */
+#app{width:100%;max-width:430px;height:100dvh;display:flex;flex-direction:column;position:relative;}
+
+/* ── HEADER ── */
+#hdr{background:var(--panel);display:flex;align-items:center;gap:10px;padding:8px 14px 8px 8px;flex-shrink:0;z-index:20;box-shadow:0 1px 3px rgba(0,0,0,.4);}
+.hdr-back{color:var(--muted);font-size:22px;line-height:1;padding:4px 2px;flex-shrink:0;}
+.hdr-av-wrap{position:relative;flex-shrink:0;}
+.hdr-av{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--green-dim),var(--green));display:flex;align-items:center;justify-content:center;font-size:24px;}
+.av-dot{position:absolute;bottom:1px;right:1px;width:11px;height:11px;background:var(--green);border-radius:50%;border:2px solid var(--panel);animation:dotP 2.6s ease-in-out infinite;}
+@keyframes dotP{0%,100%{opacity:1}50%{opacity:.5}}
+.hdr-info{flex:1;min-width:0;}
+.hdr-name{font-size:15.5px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.hdr-status{font-size:12px;color:var(--muted);transition:color .3s;}
+.hdr-status.typing{color:var(--green);}
+.hdr-right{display:flex;align-items:center;gap:12px;flex-shrink:0;}
+#score-pill{display:none;background:rgba(37,211,102,.13);border:1px solid rgba(37,211,102,.3);color:var(--green);font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;animation:pillP .35s cubic-bezier(.34,1.56,.64,1) both;}
+@keyframes pillP{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
+#prog-dots{display:none;gap:4px;align-items:center;}
+.pdot{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.18);transition:background .3s,transform .3s;}
+.pdot.done{background:var(--green);}
+.pdot.active{background:white;transform:scale(1.3);}
+.hdr-icon{color:var(--muted);font-size:21px;}
+
+/* ── TIMER BAR ── */
+#timer-bar{display:none;height:3px;background:rgba(255,255,255,.05);flex-shrink:0;overflow:hidden;}
+#timer-fill{height:100%;width:100%;background:linear-gradient(90deg,var(--ton),#64b5f6);transform-origin:left;}
+#timer-bar.urg #timer-fill{background:linear-gradient(90deg,var(--turg),#ff8a80);}
+
+/* ── CHAT ── */
+#chat{
+  flex:1;overflow-y:auto;overflow-x:hidden;padding:8px 10px 6px;
+  scroll-behavior:smooth;-webkit-overflow-scrolling:touch;scrollbar-width:none;
+  /* Extra bottom padding: last message always readable above the reply panel */
+  padding-bottom:12px;
+  background-color:var(--bg);
+  background-image: url("https://w0.peakpx.com/wallpaper/533/125/HD-wallpaper-doodle-art-chat-background-art.jpg");
+  background-size: cover;
+  background-position: center;
+  background-attachment: local;
+}
+#chat::-webkit-scrollbar{display:none;}
+
+/* ── ROWS ── */
+.row{display:flex;margin-bottom:3px;}
+.row.in {justify-content:flex-start;padding-left:2px;}
+.row.out{justify-content:flex-end;padding-right:2px;}
+.row.sys{justify-content:center;margin:8px 0;}
+.row.in,.row.out{animation:bSl .22s cubic-bezier(.25,.8,.25,1) both;}
+@keyframes bSl{from{opacity:0;transform:translateY(10px) scale(.96);}to{opacity:1;transform:translateY(0) scale(1);}}
+.date-pill{background:rgba(11,20,26,.82);border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:3px 14px;font-size:12px;color:var(--muted);}
+
+/* ── BUBBLES ── */
+.bub{max-width:80%;padding:7px 10px 5px;font-size:14.5px;line-height:1.48;color:var(--text);word-break:break-word;border-radius:var(--R);position:relative;box-shadow:0 1px 2px rgba(0,0,0,.28);}
+.bub.in {background:var(--bub-in); border-top-left-radius:2px;}
+.bub.out{background:var(--bub-out);border-top-right-radius:2px;}
+.bub.in::before{content:'';position:absolute;top:0;left:-7px;border-width:0 7px 7px 0;border-style:solid;border-color:transparent var(--bub-in) transparent transparent;}
+.bub.out::after{content:'';position:absolute;top:0;right:-7px;border-width:0 0 7px 7px;border-style:solid;border-color:transparent transparent transparent var(--bub-out);}
+.bm{display:flex;justify-content:flex-end;align-items:center;gap:3px;margin-top:3px;}
+.bt{font-size:11px;color:rgba(255,255,255,.35);}
+.bk{font-size:13px;color:var(--teal);line-height:1;}
+.b-react{position:absolute;bottom:-10px;right:6px;background:var(--panel);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:1px 5px;font-size:14px;line-height:1.4;animation:rP .4s .3s cubic-bezier(.34,1.56,.64,1) both;z-index:2;}
+@keyframes rP{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
+.annot{font-family:'Caveat',cursive;font-size:15.5px;color:rgba(255,255,255,.62);max-width:80%;margin-top:2px;padding:6px 10px;border-left:3px solid var(--green);background:rgba(37,211,102,.07);border-radius:2px var(--R) var(--R) 2px;line-height:1.4;}
+.annot.bad{border-left-color:var(--red);background:rgba(239,83,80,.07);}
+
+/* ── VOICE BUBBLE ── */
+.voice-bub{max-width:72%;background:var(--bub-in);border-radius:var(--R);border-top-left-radius:2px;padding:10px 12px 8px;display:flex;align-items:center;gap:10px;box-shadow:0 1px 2px rgba(0,0,0,.28);position:relative;}
+.voice-bub::before{content:'';position:absolute;top:0;left:-7px;border-width:0 7px 7px 0;border-style:solid;border-color:transparent var(--bub-in) transparent transparent;}
+.v-play{width:36px;height:36px;flex-shrink:0;background:var(--green);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;box-shadow:0 2px 8px rgba(37,211,102,.35);}
+.v-wave{flex:1;display:flex;align-items:center;gap:2px;height:28px;}
+.v-bar{width:3px;border-radius:2px;background:rgba(255,255,255,.3);animation:vbA 1s ease-in-out infinite alternate;}
+.v-bar.live{background:var(--green);}
+.v-bar:nth-child(1){height:5px;animation-delay:.00s}.v-bar:nth-child(2){height:13px;animation-delay:.06s}.v-bar:nth-child(3){height:20px;animation-delay:.12s}.v-bar:nth-child(4){height:9px;animation-delay:.18s}.v-bar:nth-child(5){height:24px;animation-delay:.24s}.v-bar:nth-child(6){height:15px;animation-delay:.30s}.v-bar:nth-child(7){height:7px;animation-delay:.36s}.v-bar:nth-child(8){height:22px;animation-delay:.42s}.v-bar:nth-child(9){height:11px;animation-delay:.48s}.v-bar:nth-child(10){height:18px;animation-delay:.54s}.v-bar:nth-child(11){height:6px;animation-delay:.60s}.v-bar:nth-child(12){height:16px;animation-delay:.66s}
+@keyframes vbA{from{transform:scaleY(1)}to{transform:scaleY(.35)}}
+.v-meta{display:flex;flex-direction:column;align-items:flex-end;gap:2px;flex-shrink:0;}
+.v-dur{font-size:11px;color:rgba(255,255,255,.5);}
+.v-ts{font-size:10px;color:rgba(255,255,255,.28);}
+
+/* ── TYPING ── */
+.typing-row{margin-bottom:5px;}
+.typing-bub{display:inline-flex;gap:5px;align-items:center;background:var(--bub-in);border-radius:var(--R);border-top-left-radius:2px;padding:11px 14px;box-shadow:0 1px 2px rgba(0,0,0,.28);position:relative;}
+.typing-bub::before{content:'';position:absolute;top:0;left:-7px;border-width:0 7px 7px 0;border-style:solid;border-color:transparent var(--bub-in) transparent transparent;}
+.td{width:7px;height:7px;background:var(--muted);border-radius:50%;animation:tdB 1.3s ease-in-out infinite;}
+.td:nth-child(2){animation-delay:.16s}.td:nth-child(3){animation-delay:.32s}
+@keyframes tdB{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-5px);opacity:1}}
+
+/* ── BOTTOM ── */
+#bottom{flex-shrink:0;background:var(--panel);border-top:1px solid var(--div);}
+#timer-row{display:none;align-items:center;justify-content:space-between;padding:6px 14px 0;gap:8px;}
+.timer-lbl{font-size:11px;color:var(--muted);flex-shrink:0;}
+#ring-wrap{position:relative;width:28px;height:28px;flex-shrink:0;}
+#ring-svg{transform:rotate(-90deg);width:28px;height:28px;}
+#ring-bg{fill:none;stroke:rgba(255,255,255,.08);stroke-width:3;}
+#ring-arc{fill:none;stroke:var(--ton);stroke-width:3;stroke-linecap:round;stroke-dasharray:69.1;stroke-dashoffset:0;transition:stroke .4s,stroke-dashoffset .95s linear;}
+#ring-arc.urg{stroke:var(--turg);}
+#ring-num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:var(--ton);transition:color .4s;}
+#ring-num.urg{color:var(--turg);}
+
+/* ── REPLY BUTTONS ── */
+#replies{padding:8px 10px 14px;display:grid;grid-template-columns:1fr 1fr;gap:7px;min-height:50px;}
+.qbtn{position:relative;overflow:hidden;background:rgba(255,255,255,.05);background-image:linear-gradient(180deg,rgba(255,255,255,.04) 0%,transparent 100%);border:1.5px solid rgba(37,211,102,.28);border-radius:22px;color:var(--green);font-family:'Roboto',sans-serif;font-size:13.5px;font-weight:500;padding:11px 10px;cursor:pointer;text-align:center;line-height:1.3;transition:background .15s,border-color .15s,transform .12s,opacity .2s;-webkit-appearance:none;}
+.qbtn::after{content:'';position:absolute;inset:0;border-radius:inherit;background:radial-gradient(circle at center,rgba(37,211,102,.22) 0%,transparent 70%);opacity:0;transition:opacity .2s;}
+.qbtn:active::after{opacity:1;}.qbtn:active{transform:scale(.95);}
+.qbtn.skip{border-color:rgba(134,150,160,.3);color:var(--muted);background:rgba(255,255,255,.03);}
+.qbtn.sel{background:rgba(37,211,102,.16);border-color:var(--green);}
+.qbtn.dis{opacity:.3;pointer-events:none;}
+.qbtn.wrong{border-color:var(--red);color:var(--red);background:rgba(239,83,80,.07);}
+.qbtn.correct-reveal{border-color:var(--green);background:rgba(37,211,102,.16);color:var(--green);animation:cP .5s ease-in-out;}
+@keyframes cP{0%{box-shadow:0 0 0 0 rgba(37,211,102,.6)}100%{box-shadow:0 0 0 10px rgba(37,211,102,0)}}
+
+/* ── IMAGE BUTTONS (Q6) ── */
+.img-btn{
+  position:relative;overflow:hidden;
+  background:rgba(0,0,0,.3);
+  border:2px solid rgba(37,211,102,.25);border-radius:12px;
+  cursor:pointer;padding:3px;
+  aspect-ratio:4/3;
+  transition:border-color .15s,transform .12s,box-shadow .15s;
+  -webkit-appearance:none;
+  display:flex;align-items:center;justify-content:center;
+}
+.img-btn img{width:100%;height:100%;object-fit:cover;border-radius:9px;display:block;}
+/* Fallback placeholder when image missing */
+.img-btn .img-ph{width:100%;height:100%;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:rgba(255,255,255,.55);background:linear-gradient(135deg,#1a2730,#2a3a45);}
+.img-btn:active{transform:scale(.96);}
+.img-btn.sel{border-color:var(--green);}
+.img-btn.wrong{border-color:var(--red);box-shadow:0 0 0 2px rgba(239,83,80,.25);}
+.img-btn.correct-reveal{border-color:var(--green);box-shadow:0 0 0 3px rgba(37,211,102,.35);animation:cP .5s ease-in-out;}
+.img-btn.dis{opacity:.3;pointer-events:none;}
+/* swap flip */
+@keyframes imgFlipOut{0%{transform:scale(1)}40%{transform:scaleX(0) scale(1.08)}100%{transform:scaleX(0)}}
+@keyframes imgFlipIn {0%{transform:scaleX(0)}60%{transform:scaleX(0)}100%{transform:scale(1)}}
+.img-btn.flipping-out img,.img-btn.flipping-out .img-ph{animation:imgFlipOut .35s ease-in forwards;}
+.img-btn.flipping-in  img,.img-btn.flipping-in  .img-ph{animation:imgFlipIn  .35s ease-out forwards;}
+
+/* ── LASAGNA click-image (Q7→Q10) ── */
+.click-img-wrap{
+  margin-top:8px;cursor:pointer;border-radius:12px;overflow:hidden;
+  border:2px solid transparent;
+  transition:border-color .2s,transform .15s;
+  animation:lasP 2s ease-in-out infinite;
+  display:inline-block;max-width:200px;width:100%;
+}
+.click-img-wrap:active{transform:scale(.97);}
+.click-img-wrap img{width:100%;height:100%;object-fit:cover;border-radius:10px;display:block;}
+.click-img-wrap .img-ph{height:110px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:rgba(255,220,100,.7);background:linear-gradient(135deg,#2a1a05,#3d2a0a);border-radius:10px;}
+@keyframes lasP{0%,100%{border-color:rgba(255,184,0,.18)}50%{border-color:rgba(255,184,0,.55)}}
+.click-hint{font-family:'Caveat',cursive;font-size:12px;color:rgba(255,184,0,.6);margin-top:3px;text-align:left;}
+
+/* ── HADES FALLING FLAMES (pointer-events:none layer over app) ── */
+#hades-ov{
+  display:none;
+  position:fixed;inset:0;z-index:700;
+  pointer-events:none;
+  overflow:hidden;
+  /* Dark vignette that fades in/out with the container */
+  background:transparent;
+  transition:background .5s;
+}
+#hades-ov.burning{
+  background:linear-gradient(180deg,rgba(30,0,0,.55) 0%,rgba(20,0,0,.3) 60%,transparent 100%);
+}
+/* Individual falling flame emoji */
+.hf{
+  position:absolute;
+  top:-60px; /* start just above viewport */
+  font-size:var(--sz,28px);
+  animation:hfFall var(--d,2.8s) cubic-bezier(.4,0,.6,1) var(--dl,0s) forwards;
+  will-change:transform,opacity;
+  filter:drop-shadow(0 0 6px rgba(255,100,0,.8));
+}
+@keyframes hfFall{
+  0%  {transform:translateY(0)    scale(1)   rotate(0deg);   opacity:1}
+  70% {opacity:.8}
+  100%{transform:translateY(115vh) scale(.5)  rotate(var(--r,15deg)); opacity:0}
+}
+
+/* Flame bubble: in-chat message styled with fire colors */
+.bub.flame{
+  background: linear-gradient(135deg,#1a0400,#2d0800);
+  border:1px solid rgba(255,80,0,.35);
+  box-shadow:0 0 18px rgba(255,60,0,.25), 0 1px 2px rgba(0,0,0,.5);
+  color:#ff9a40;
+  animation:flameBub .4s cubic-bezier(.25,.8,.25,1) both, flameGlow 2.5s ease-in-out infinite alternate;
+}
+.bub.flame::before{
+  border-right-color:transparent !important;
+  border-color:transparent transparent transparent transparent !important;
+}
+/* replace tail color */
+.row.in .bub.flame::before{
+  border-right-color:#1a0400 !important;
+}
+.bub.flame strong{color:#ff6a1a;}
+.bub.flame .flame-line{display:block;line-height:1.55;}
+@keyframes flameBub{from{opacity:0;transform:translateY(8px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes flameGlow{from{box-shadow:0 0 12px rgba(255,60,0,.2)}to{box-shadow:0 0 22px rgba(255,60,0,.4)}}
+
+/* ── RED FLASH (timer danger) ── */
+#red-flash{
+  display:none;position:fixed;inset:0;z-index:600;
+  background:rgba(239,83,80,.25);
+  pointer-events:none;
+  animation:rFlash .5s steps(1,end) infinite;
+}
+@keyframes rFlash{0%,49%{opacity:1}50%,100%{opacity:0}}
+
+/* ── RAGE ANIMATION on Q6 correct ── */
+@keyframes rageShake{
+  0%,100%{transform:translateX(0)}
+  5%{transform:translateX(-14px) rotate(-.8deg)}
+  10%{transform:translateX(14px) rotate(.8deg)}
+  15%{transform:translateX(-12px)}
+  20%{transform:translateX(12px)}
+  30%{transform:translateX(-10px)}
+  40%{transform:translateX(10px)}
+  50%{transform:translateX(-7px)}
+  60%{transform:translateX(7px)}
+  75%{transform:translateX(-4px)}
+  90%{transform:translateX(4px)}
+}
+.raging{animation:rageShake .7s ease-in-out;}
+
+/* ── FEEDBACK OVERLAY ── */
+#fbo{position:fixed;inset:0;pointer-events:none;z-index:500;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .18s;}
+#fbo.show{opacity:1;}
+#fbi{font-size:90px;animation:fbB .45s cubic-bezier(.34,1.56,.64,1);filter:drop-shadow(0 8px 24px rgba(0,0,0,.5));}
+@keyframes fbB{from{transform:scale(0) rotate(-10deg)}to{transform:scale(1) rotate(3deg)}}
+
+/* ── SHAKE ── */
+@keyframes shake{0%,100%{transform:translateX(0)}12%{transform:translateX(-9px) rotate(-.4deg)}25%{transform:translateX(9px) rotate(.4deg)}37%{transform:translateX(-7px)}50%{transform:translateX(7px)}62%{transform:translateX(-4px)}75%{transform:translateX(4px)}87%{transform:translateX(-2px)}}
+.shaking{animation:shake .5s ease-in-out;}
+
+/* ── EMOJI RAIN ── */
+.ep{position:fixed;pointer-events:none;z-index:900;font-size:var(--sz,24px);animation:epF var(--d,1.8s) cubic-bezier(.25,.46,.45,.94) var(--dl,0s) both;}
+@keyframes epF{0%{transform:translateY(-30px) rotate(0deg) scale(1);opacity:1;}100%{transform:translateY(105vh) rotate(var(--r,200deg)) scale(.7);opacity:0;}}
+
+/* ── FINAL SCREEN ── */
+#final{display:none;position:fixed;inset:0;z-index:800;background:var(--bg);overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 0 48px;}
+.fs-hdr{background:var(--panel);padding:14px 16px;display:flex;flex-direction:column;align-items:center;gap:2px;position:sticky;top:0;z-index:5;box-shadow:0 2px 10px rgba(0,0,0,.35);}
+.fs-score{font-size:58px;font-weight:700;line-height:1;color:var(--green);}
+.fs-grade{font-size:13px;color:var(--muted);text-align:center;line-height:1.5;}
+.fs-grade strong{color:var(--text);font-size:15px;}
+.fs-chat{padding:14px 12px;display:flex;flex-direction:column;gap:10px;}
+.recap-item{background:var(--bub-in);border-radius:var(--R);padding:10px 12px;display:flex;align-items:flex-start;gap:10px;animation:bSl .3s ease both;}
+.recap-ico{font-size:18px;flex-shrink:0;margin-top:1px;}
+.recap-q{font-size:13px;color:rgba(255,255,255,.72);line-height:1.4;flex:1;}
+.recap-a{font-size:11px;color:var(--muted);margin-top:3px;}
+.recap-item.ok .recap-a{color:rgba(37,211,102,.7);}
+.recap-item.ok .recap-q{color:var(--text);}
+.scr-hint{font-family:'Caveat',cursive;font-size:18px;color:var(--green);text-align:center;margin-bottom:10px;animation:hW 2.5s ease-in-out infinite;}
+@keyframes hW{0%,100%{transform:rotate(-1deg)}50%{transform:rotate(1.5deg)}}
+#scratch-box{position:relative;border-radius:14px;overflow:hidden;box-shadow:0 8px 28px rgba(0,0,0,.5),0 0 0 1px rgba(37,211,102,.15);}
+#prize-inner{background:linear-gradient(145deg,#0a1e18,#0d2820);border:1px solid rgba(37,211,102,.12);padding:28px 20px;text-align:center;min-height:200px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;}
+.prize-e{font-size:52px;animation:prP 2s ease-in-out infinite;}
+@keyframes prP{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+.prize-t{font-size:21px;font-weight:700;color:var(--green);line-height:1.25;}
+.prize-d{font-size:14px;color:var(--muted);line-height:1.6;}
+.prize-l{font-family:'Caveat',cursive;font-size:17px;color:var(--rose);margin-top:4px;}
+#scratch-canvas{position:absolute;inset:0;border-radius:14px;cursor:crosshair;touch-action:none;}
+.fs-restart{display:block;margin:16px auto 0;background:rgba(255,255,255,.05);border:1px solid var(--div);border-radius:22px;color:var(--muted);font-family:'Roboto',sans-serif;font-size:13.5px;padding:11px 28px;cursor:pointer;-webkit-appearance:none;transition:background .15s;}
+.fs-restart:active{background:rgba(255,255,255,.1);}
+
+</style>
+</head>
+<body>
+
+<div id="fbo"><div id="fbi"></div></div>
+<div id="hades-ov"></div>
+<div id="red-flash"></div>
+
+<div id="app">
+  <div id="hdr">
+    <div class="hdr-back">‹</div>
+    <div class="hdr-av-wrap">
+      <div class="hdr-av">🐒</div>
+      <div class="av-dot"></div>
+    </div>
+    <div class="hdr-info">
+      <div class="hdr-name">Kohti Singe</div>
+      <div class="hdr-status" id="hstatus">en ligne</div>
+    </div>
+    <div class="hdr-right">
+      <div id="prog-dots"></div>
+      <div id="score-pill"></div>
+      <span class="hdr-icon">⋮</span>
+    </div>
+  </div>
+
+  <div id="timer-bar"><div id="timer-fill"></div></div>
+  <div id="chat"></div>
+
+  <div id="bottom">
+    <div id="timer-row">
+      <div class="timer-lbl">⏱ Temps restant</div>
+      <div id="ring-wrap">
+        <svg id="ring-svg" viewBox="0 0 28 28">
+          <circle id="ring-bg"  cx="14" cy="14" r="11"/>
+          <circle id="ring-arc" cx="14" cy="14" r="11"/>
+        </svg>
+        <div id="ring-num">20</div>
+      </div>
+    </div>
+    <div id="replies"></div>
+  </div>
+</div>
+
+<div id="final"></div>
+
+<script>
+'use strict';
+
+/* ══════ AUDIO ══════ */
+let _AC=null;
+const AC=()=>{if(!_AC)_AC=new(window.AudioContext||window.webkitAudioContext)();return _AC;};
+const osc=(f,t,v,d,t0=0)=>{const a=AC(),o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);o.type=t;const ct=a.currentTime+t0;o.frequency.setValueAtTime(f,ct);g.gain.setValueAtTime(v,ct);g.gain.exponentialRampToValueAtTime(.001,ct+d);o.start(ct);o.stop(ct+d+.01);};
+
+function sndNotif(){
+  try{
+    const a=AC();
+    const o1=a.createOscillator(),g1=a.createGain();o1.connect(g1);g1.connect(a.destination);o1.type='sine';
+    o1.frequency.setValueAtTime(600,a.currentTime);o1.frequency.exponentialRampToValueAtTime(1000,a.currentTime+.07);
+    g1.gain.setValueAtTime(.28,a.currentTime);g1.gain.exponentialRampToValueAtTime(.001,a.currentTime+.16);o1.start();o1.stop(a.currentTime+.17);
+    const o2=a.createOscillator(),g2=a.createGain();o2.connect(g2);g2.connect(a.destination);o2.type='sine';
+    const t2=a.currentTime+.15;o2.frequency.setValueAtTime(850,t2);o2.frequency.exponentialRampToValueAtTime(1280,t2+.07);
+    g2.gain.setValueAtTime(.22,t2);g2.gain.exponentialRampToValueAtTime(.001,t2+.18);o2.start(t2);o2.stop(t2+.19);
+  }catch(e){}
+}
+function sndTap(){try{osc(900,'sine',.12,.07);}catch(e){}}
+function sndSuccess(){try{[523,659,784,1047].forEach((f,i)=>osc(f,'sine',.15,.22,i*.09));}catch(e){}}
+function sndError(){try{osc(200,'sawtooth',.18,.38);}catch(e){}}
+function sndWhoosh(){try{const a=AC(),o=a.createOscillator(),g=a.createGain(),f=a.createBiquadFilter();o.connect(f);f.connect(g);g.connect(a.destination);o.type='sawtooth';f.type='bandpass';f.frequency.value=900;f.Q.value=.6;o.frequency.setValueAtTime(150,a.currentTime);o.frequency.exponentialRampToValueAtTime(1400,a.currentTime+.2);g.gain.setValueAtTime(.09,a.currentTime);g.gain.exponentialRampToValueAtTime(.001,a.currentTime+.24);o.start();o.stop(a.currentTime+.26);}catch(e){}}
+function sndVictory(){try{[523,659,784,659,1047,880,1175].forEach((f,i)=>osc(f,'sine',.18,.27,i*.12));}catch(e){}}
+function sndVoicePop(){try{const a=AC(),b=a.createBuffer(1,a.sampleRate*.3,a.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,.6);const s=a.createBufferSource(),f=a.createBiquadFilter(),g=a.createGain();s.buffer=b;f.type='bandpass';f.frequency.value=280;f.Q.value=4;s.connect(f);f.connect(g);g.connect(a.destination);g.gain.setValueAtTime(.35,a.currentTime);g.gain.exponentialRampToValueAtTime(.001,a.currentTime+.3);s.start();s.stop(a.currentTime+.32);}catch(e){}}
+function sndRumble(){
+  try{
+    const a=AC();
+    // Low rumble for rage
+    const o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);
+    o.type='sawtooth';o.frequency.setValueAtTime(60,a.currentTime);
+    o.frequency.linearRampToValueAtTime(40,a.currentTime+.6);
+    g.gain.setValueAtTime(.3,a.currentTime);g.gain.exponentialRampToValueAtTime(.001,a.currentTime+.65);
+    o.start();o.stop(a.currentTime+.68);
+    // Higher distortion layer
+    const o2=a.createOscillator(),g2=a.createGain();o2.connect(g2);g2.connect(a.destination);
+    o2.type='sawtooth';o2.frequency.setValueAtTime(180,a.currentTime+.05);
+    g2.gain.setValueAtTime(.15,a.currentTime+.05);g2.gain.exponentialRampToValueAtTime(.001,a.currentTime+.5);
+    o2.start(a.currentTime+.05);o2.stop(a.currentTime+.55);
+  }catch(e){}
+}
+function sndHadesTransition(){
+  try{
+    // Deep dramatic chord
+    [80,120,160].forEach((f,i)=>{const a=AC(),o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);o.type='sawtooth';o.frequency.setValueAtTime(f,a.currentTime+i*.08);g.gain.setValueAtTime(.12,a.currentTime+i*.08);g.gain.exponentialRampToValueAtTime(.001,a.currentTime+1.8);o.start(a.currentTime+i*.08);o.stop(a.currentTime+2);});
+  }catch(e){}
+}
+
+/* ══════ QUESTIONS ══════ */
+const QS=[
+  /* Q1 */
+  {
+    intro:"On commence. Simple et Basique. 😌",
+    q:`💍 Quel est le moment exact où j'ai su que tu étais <strong>"la bonne"</strong> ?`,
+    opts:['Notre premier voyage 🇹🇭','Le jour du mariage 💍','À notre première fois 🍆','Dès la première discussion 💬'],
+    answer:3, mechanic:'normal', reaction:'🥰',
+    optResponses:[
+      {ok:false,msg:"C'est pas faux... Mais j'étais déjà fou amoureux avant ça !",annot:null,bad:false},
+      {ok:false,msg:"T'as cliquer au hasard ?? 😭",annot:null,bad:true},
+      {ok:false,msg:"Ça a aidé.... Mais non ❤️",annot:null,bad:false},
+      {ok:true, msg:"C'était une évidence dès qu'on s'est assis sur un banc et qu'on a discuté... 💬🥹",annot:"✍️ Ce banc a changé ma vie.",bad:false},
+    ],
+  },
+  /* Q2 — ex Q3 */
+  {
+    intro:"Allez, on monte en niveau. 😏",
+    q:`💖 Quelle est la qualité chez toi que j'aime le plus ?`,
+    opts:["Ton sens de l'humour 😂","Ta beauté 😍","Ton intelligence sociale 🧠","Toutes les réponses ✨"],
+    answer:3, mechanic:'normal', reaction:'💖',
+    okMsg:"TOUTES. 🥰 Comment choisir quand tu es parfaite en tout ? Impossible.",
+    okAnnot:"✍️ (Ok j'exagère légèrement. Très légèrement.)",
+    koMsg:"C'était <strong>Toutes les réponses ✨</strong>. T'es tout ça en même temps. Prends le compliment. 😘",
+    koAnnot:"Je vais devoir travailler là-dessus avec toi.",
+    toMsg:"Temps écoulé ! C'était : <strong>Toutes les réponses ✨</strong>. Parce que t'es parfaite. Même lente. 😘",
+  },
+  /* Q3 — ex Q2 */
+  {
+    intro:"Question délicate. Réfléchis bien... 😇",
+    q:`🌟 Si je pouvais passer une nuit avec une star — sans conséquence — qui choisirais-je ?`,
+    opts:['Monica Bellucci 🇮🇹','Beyoncé 🎤','Brigitte Macron 🇫🇷','Naomi Campbell 👑'],
+    answer:-1, mechanic:'timeout_win', reaction:'🧠',
+    okMsg:"...Tu as laissé le temps s'écouler. 🧠<br>Intelligente. La seule bonne réponse était le <em>silence</em>.",
+    okAnnot:"✍️ (Ou t'as hésité trop longtemps entre Monica et Brigitte. On fera semblant de ne pas savoir.)",
+    koMsg:"Ah bon ? J'aurais pas répondu ça perso.",
+    koAnnot:"Kind reminder, j'ai toujours un Joker. 🃏",
+    toMsg:"...Tu as laissé filer le chrono. La seule bonne réponse était le <em>silence</em>. Bien joué. 🧠",
+    toAnnot:"✍️ (Ou t'avais juste abandonné. On va dire que c'était stratégique.)",
+  },
+  /* Q4 — teleport */
+  {
+    intro:"La prochaine question est un sujet Sensible. Attention à ta réponse !! 😬",
+    q:`🙈 Quel est mon <em>meilleur</em> défaut ?`,
+    opts:["J'exagère avec la grippe 🤧","Être muet comme Bernardo 🤫","Je ne termine jamais ce que je commence 🦥","Je suis un détraqué sexuel 😈🍆"],
+    answer:2, mechanic:'teleport', teleportBtn:2, reaction:'😤',
+    okMsg:"Je suis PAS susceptible OK...<br>Bon. On passe à la suite. 😤",
+    okAnnot:"✍️ (Oui c'était moi. Oui je suis susceptible. CHUT.)",
+    koMsg:"Y'a pire non ? 😅",
+    koAnnot:null,
+    toMsg:"Temps écoulé ! La réponse était C, mais le bouton était peu coopératif. 🦥",
+  },
+  /* Q5 — "Qui est mon pref ?" avec transition Hadès après */
+  {
+    intro:"Petite question sympa pour se réchauffer. 😌",
+    q:`🌟 Qui est mon pref ?`,
+    opts:['Zayn 🎤','Toi 😍','Rayan 🤙','Fidaa 😏'],
+    answer:1, mechanic:'normal', reaction:'💚',
+    optResponses:[
+      {ok:false,msg:"Arrête de faire ta modeste, je sais que tu sais...",annot:null,bad:false},
+      {ok:true, msg:"The numero uno ! Seniorita Samira <3",annot:null,bad:false},
+      {ok:false,msg:"Même si je le kiff... Réponse incorrecte 😅",annot:null,bad:false},
+      {ok:false,msg:"Ahahaha Tu penses que je devrais me marier ? 😊",annot:null,bad:false},
+    ],
+    postAnswer: true, // déclenche la transition Hadès
+  },
+  /* Q6 — image motos, 10 sec, shuffle à 7s */
+  {
+    intro:"Question suivante. 👀",
+    q:`🏍️ Quelle est la plus belle moto selon moi ?`,
+    opts:['moto1.jpg','moto2.jpg','moto3.jpg','moto4.jpg'],
+    imgs:['moto1.jpg','moto2.jpg','moto3.jpg','moto4.jpg'],
+    answer:3, mechanic:'images', reaction:'🤬',
+    okMsg:"Tu as trouvé... 😤💢<br>J'arrive PAS à croire que t'aies trouvé.",
+    okAnnot:"✍️ Rage. Pure rage. Bien joué quand même. 😤",
+    koMsg:"Alors bébé... On sèche ? 😏",
+    koAnnot:null,
+    toMsg:"⏱ Temps écoulé ! C'était la moto 4. La plus belle, évidemment. 🏍️",
+  },
+  /* Q7 — métier d'enfant */
+  {
+    intro:"Une petite question nostalgie. 🚀",
+    q:`👦 Quand j'étais petit, quel métier je voulais faire ?`,
+    opts:['Astronaute 🚀','Footballeur ⚽','Pompier 🚒','Astronome 🔭'],
+    answer:0, mechanic:'normal', reaction:'🚀',
+    okMsg:"Astronaute ! 🚀 Les étoiles m'ont toujours attiré. Et non, ce n'est pas pareil qu'astronome.",
+    okAnnot:"✍️ (Bon, j'ai un peu revu mes ambitions depuis.)",
+    koMsg:"C'était <strong>Astronaute 🚀</strong> ! Pas astronome — je voulais voyager DANS l'espace, pas juste le regarder.",
+    koAnnot:"Nuance importante.",
+    toMsg:"⏱ C'était Astronaute 🚀 ! Je visais haut, littéralement.",
+  },
+  /* Q8 */
+  {
+    intro:"Nouvelle chance de te scorer un point ! 💪",
+    q:`🥊 Quel est mon sport préféré ?`,
+    opts:['La boxe anglaise 🥊','La boxe Thaï 🥊','La boxe 🥊','La pasta boxe 🍝'],
+    answer:1, mechanic:'normal', reaction:'🥊',
+    optResponses:[
+      {ok:false,msg:"Mais....<br>Tu sais comment je m'appelle ?",annot:null,bad:true},
+      {ok:true, msg:"Je savais que tu m'écoutais vraiment ❤️",annot:"✍️ T'es la best ! Allez BB !",bad:false},
+      {ok:false,msg:"Mais....<br>Tu sais comment je m'appelle ?",annot:null,bad:true},
+      {ok:false,msg:"Hé Ho ! 😤<br>Je suis pas venu ici pour souffrir ok !",annot:null,bad:true},
+    ],
+  },
+  /* Q9 — qui j'admire */
+  {
+    intro:"Presque terminé... Respire. 😤",
+    q:`🌟 Qui est-ce que j'admire le plus ?`,
+    opts:['Albert Einstein 🧠','Cristiano Ronaldo ⚽','Malcolm X ✊','Autre... 👀'],
+    answer:3, mechanic:'normal', reaction:'❤️',
+    okMsg:"Autre. C'est bien évidemment... toi. ❤️",
+    okAnnot:"✍️ (T'avais un doute ??)",
+    koMsg:"C'était <strong>Autre 👀</strong>... c'était toi, évidemment. ❤️<br>Personne ne t'arrive à la cheville.",
+    koAnnot:"Retiens-le pour la prochaine fois.",
+    toMsg:"⏱ C'était toi ! 👀❤️ Tu aurais dû le savoir.",
+  },
+  /* Q10 — ex Q7 — cliquer sur l'image lasagne */
+  {
+    intro:"Dernière question avant la suite...",
+    q:`🍽️ Quel est mon plat préféré <img src="lasagna.png" alt="🍝" onclick="handleLasagnaClick()" style="height:1.1em;width:auto;vertical-align:middle;cursor:pointer;display:inline;border-radius:3px;" onerror="this.outerHTML='<span onclick=handleLasagnaClick() style=cursor:pointer>🍝</span>'"> ?`,
+    opts:['Pâtes 🍝','Pizzouille 🍕','Pastilla 🥧','Toi 😏'],
+    answer:-1, mechanic:'click_image', reaction:'😱',
+    okMsg:"???\nImpossible\n....\nT'as triché, j'en suis sûr !",
+    okAnnot:null,
+    koMsg:"Je suis Déçu... Après 15 ans tu connais toujours pas mon plat préféré ?! 😢",
+    koAnnot:null,
+    toMsg:"⏱ Temps écoulé. C'était la lasagne dans la question ! T'as même pas essayé de cliquer dessus ? 😭",
+  },
+];
+
+/* ══════ STATE ══════ */
+let qIdx=0,score=0,log=[];
+let timerTick=null,timerSec=20;
+let timerCurrent=20; // can change to 10 after Q5
+let teleCount=0,teleBtn=null;
+let consecutiveWrong=0;
+let hardMode=false; // after Q5
+const TELE_MAX=3, CIRC=2*Math.PI*11;
+
+/* ══════ DOM UTILS ══════ */
+const $chat   =()=>document.getElementById('chat');
+const $replies=()=>document.getElementById('replies');
+const sleep   =ms=>new Promise(r=>setTimeout(r,ms));
+const ts      =()=>new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+
+function scrollDown(){const c=$chat();requestAnimationFrame(()=>c.scrollTo({top:c.scrollHeight,behavior:'smooth'}));}
+
+function addSys(html){const r=document.createElement('div');r.className='row sys';r.innerHTML=`<div class="date-pill">${html}</div>`;$chat().appendChild(r);scrollDown();}
+function addIn(html,reaction){const r=document.createElement('div');r.className='row in';r.innerHTML=`<div class="bub in">${html}<div class="bm"><span class="bt">${ts()}</span></div>${reaction?`<div class="b-react">${reaction}</div>`:''}</div>`;$chat().appendChild(r);sndNotif();scrollDown();}
+function addOut(html){const r=document.createElement('div');r.className='row out';r.innerHTML=`<div class="bub out">${html}<div class="bm"><span class="bt">${ts()}</span><span class="bk">✓✓</span></div></div>`;$chat().appendChild(r);scrollDown();}
+function addAnnot(html,bad=false){const r=document.createElement('div');r.className='row in';r.style.marginTop='2px';r.innerHTML=`<div class="annot${bad?' bad':''}">${html}</div>`;$chat().appendChild(r);scrollDown();}
+async function showTyping(ms=1500){
+  const st=document.getElementById('hstatus');
+  st.textContent="en train d'écrire...";st.classList.add('typing');
+  const r=document.createElement('div');r.className='row in typing-row';
+  r.innerHTML=`<div class="typing-bub"><div class="td"></div><div class="td"></div><div class="td"></div></div>`;
+  $chat().appendChild(r);scrollDown();
+  await sleep(ms);
+  $chat().removeChild(r);
+  st.textContent='en ligne';st.classList.remove('typing');
+}
+
+/* ══════ VOICE NOTE GRONDEUR ══════ */
+let voiceGrondeurUsed = false; // fires max once per game
+
+async function showVoiceGrondeur(){
+  voiceGrondeurUsed = true;
+  const st=document.getElementById('hstatus');
+  st.textContent='🎤 vocal...';st.classList.add('typing');
+  await sleep(900);st.textContent='en ligne';st.classList.remove('typing');
+
+  const bars=Array.from({length:12},()=>`<div class="v-bar"></div>`).join('');
+  const durId='vdur'+Date.now();
+  const r=document.createElement('div');r.className='row in';
+  // Bubble is clickable — audio plays on user tap
+  r.innerHTML=`<div class="voice-bub" id="voice-play-bub" style="cursor:pointer;" title="Appuie pour écouter">
+    <div class="v-play" id="vplay-btn">▶️</div>
+    <div class="v-wave">${bars}</div>
+    <div class="v-meta"><div class="v-dur" id="${durId}">0:03</div><div class="v-ts">${ts()}</div></div>
+  </div>`;
+  $chat().appendChild(r);sndNotif();scrollDown();
+
+  // Click anywhere on the bubble to play
+  let audioPlayed=false;
+  const bub=document.getElementById('voice-play-bub');
+  const playBtn=document.getElementById('vplay-btn');
+  if(bub){
+    bub.onclick=()=>{
+      if(audioPlayed)return;
+      audioPlayed=true;
+      playBtn.textContent='⏸️';
+      // Animate bars
+      r.querySelectorAll('.v-bar').forEach(b=>b.classList.add('live'));
+      // Sound: 3 pops simulating voice
+      let s=3;
+      const tick=setInterval(()=>{
+        sndVoicePop();s--;
+        const el=document.getElementById(durId);
+        if(el)el.textContent=`0:0${Math.max(0,s)}`;
+        if(s<=0){
+          clearInterval(tick);
+          r.querySelectorAll('.v-bar').forEach(b=>b.classList.remove('live'));
+          playBtn.textContent='▶️';
+        }
+      },1000);
+    };
+  }
+
+  // Wait 4s then show the follow-up text (regardless of whether audio was played)
+  await sleep(4000);
+  await showTyping(900);
+  addIn("Non mais sérieusement... 2 fois d'affilée ?? 😤🙈");
+  addAnnot('✍️ Ceci était un avertissement. Les avocats ont été contactés automatiquement.');
+  await sleep(700);
+}
+
+/* ══════ HADES TRANSITION ══════ */
+async function hadesTransition(){
+  const ov=document.getElementById('hades-ov');
+  ov.innerHTML='';
+  ov.style.display='block';
+  sndHadesTransition();
+
+  // Phase 1 — first wave of flames from the top (staggered columns, progressive)
+  await sleep(80);
+  ov.classList.add('burning');
+
+  const flameEmojis=['🔥','🔥','🔥','🔥','🔥','🔥','💀','⚔️','🔥','🔥'];
+  // Spawn 40 flames in 3 progressive waves, each wave covering more columns
+  const spawnWave=(count,delay,yJitter=0)=>{
+    for(let i=0;i<count;i++){
+      setTimeout(()=>{
+        const e=document.createElement('div');e.className='hf';
+        e.textContent=flameEmojis[Math.floor(Math.random()*flameEmojis.length)];
+        const sz=[22,26,30,36,42][Math.floor(Math.random()*5)];
+        e.style.setProperty('--sz',sz+'px');
+        e.style.setProperty('--d',(1.8+Math.random()*1.6)+'s');
+        e.style.setProperty('--dl','0s');
+        e.style.setProperty('--r',(Math.random()*30-15)+'deg');
+        e.style.left=(Math.random()*100)+'%';
+        e.style.top=(-40-Math.random()*yJitter)+'px';
+        ov.appendChild(e);
+        setTimeout(()=>e.remove(),4000);
+      },delay+i*55);
+    }
+  };
+
+  spawnWave(14,0,10);   // wave 1 — immediate
+  spawnWave(16,550,20); // wave 2 — 0.55s later, denser
+  spawnWave(14,1050,30);// wave 3 — 1.05s later, final burst
+
+  // Let flames fall for 1.8s before the chat messages appear
+  await sleep(1800);
+
+  // Phase 2 — text appears IN the WhatsApp conversation as flame bubbles
+  await addFlameMsg('🔥 J\'ai l\'impression que le questionnaire est trop simple pour toi. Augmentons la difficulté.');
+  await sleep(800);
+  await addFlameMsg('Passons à la prochaine question.');
+  await sleep(600);
+  await addFlameMsg('⚠️ Maintenant tu n\'as plus que <strong>10 secondes</strong> pour répondre.');
+  await sleep(1200);
+
+  // Fade out the overlay, keep app intact
+  ov.classList.remove('burning');
+  await sleep(400);
+  ov.style.display='none';ov.innerHTML='';
+
+  // Switch to hard mode
+  timerCurrent=10;
+  hardMode=true;
+}
+
+/* Helper: injects a flame-styled bubble into the chat */
+async function addFlameMsg(html){
+  const st=document.getElementById('hstatus');
+  st.textContent="en train d'écrire...";st.classList.add('typing');
+  // Short fake typing (no visible bubble — it's already dramatic enough)
+  await sleep(700);
+  st.textContent='en ligne';st.classList.remove('typing');
+
+  const row=document.createElement('div');row.className='row in';
+  row.innerHTML=`<div class="bub in flame">${html}<div class="bm"><span class="bt" style="color:rgba(255,100,30,.4)">${ts()}</span></div></div>`;
+  $chat().appendChild(row);
+  sndNotif();
+  scrollDown();
+}
+
+/* ══════ RED FLASH ══════ */
+function startRedFlash(){document.getElementById('red-flash').style.display='block';}
+function stopRedFlash(){document.getElementById('red-flash').style.display='none';}
+
+/* ══════ TIMER ══════ */
+function startTimer(onEnd){
+  stopTimer();
+  timerSec=timerCurrent;
+  const bar=document.getElementById('timer-bar'),fill=document.getElementById('timer-fill'),
+        row=document.getElementById('timer-row'),arc=document.getElementById('ring-arc'),num=document.getElementById('ring-num');
+  bar.style.display='block';bar.classList.remove('urg');
+  row.style.display='flex';arc.classList.remove('urg');num.classList.remove('urg');
+  num.textContent=timerCurrent;
+  fill.style.transition='none';fill.style.transform='scaleX(1)';fill.offsetHeight;
+  fill.style.transition=`transform ${timerCurrent}s linear`;fill.style.transform='scaleX(0)';
+  arc.style.strokeDashoffset=0;
+
+  timerTick=setInterval(()=>{
+    timerSec--;num.textContent=timerSec;
+    arc.style.strokeDashoffset=CIRC*(1-timerSec/timerCurrent);
+    if(timerSec<=Math.floor(timerCurrent*.4)){
+      bar.classList.add('urg');arc.classList.add('urg');num.classList.add('urg');
+    }
+    // Red flash at < 4 seconds (hard mode)
+    if(hardMode && timerSec<=4 && timerSec>0) startRedFlash();
+    else if(timerSec<=0||!hardMode||timerSec>4) stopRedFlash();
+
+    if(timerSec<=0){stopTimer();onEnd();}
+  },1000);
+}
+function stopTimer(){
+  if(timerTick){clearInterval(timerTick);timerTick=null;}
+  stopRedFlash();
+  document.getElementById('timer-bar').style.display='none';
+  document.getElementById('timer-row').style.display='none';
+}
+
+/* ══════ PROGRESS + SCORE ══════ */
+function buildDots(){
+  const w=document.getElementById('prog-dots');w.style.display='flex';w.innerHTML='';
+  QS.forEach((_,i)=>{const d=document.createElement('div');d.className='pdot'+(i===0?' active':'');d.id=`pd${i}`;w.appendChild(d);});
+}
+function updateDots(idx){QS.forEach((_,i)=>{const d=document.getElementById(`pd${i}`);if(!d)return;d.className='pdot'+(i<idx?' done':i===idx?' active':'');});}
+function refreshScore(){
+  const p=document.getElementById('score-pill');p.style.display='inline-block';p.textContent=`${score}/${qIdx}`;
+  p.style.animation='none';p.offsetHeight;p.style.animation='pillP .35s cubic-bezier(.34,1.56,.64,1) both';
+}
+
+/* ══════ FX ══════ */
+function emojiRain(set,n=16,sizes=['20px','26px','32px']){
+  for(let i=0;i<n;i++)setTimeout(()=>{
+    const el=document.createElement('div');el.className='ep';
+    el.textContent=set[Math.floor(Math.random()*set.length)];
+    el.style.left=(Math.random()*88+2)+'vw';
+    el.style.setProperty('--r',(Math.random()*400-200)+'deg');
+    el.style.setProperty('--d',(1.3+Math.random()*.9)+'s');
+    el.style.setProperty('--dl',(Math.random()*.4)+'s');
+    el.style.setProperty('--sz',sizes[Math.floor(Math.random()*sizes.length)]);
+    document.body.appendChild(el);setTimeout(()=>el.remove(),3200);
+  },i*50);
+}
+function showFeedback(emoji){
+  const ov=document.getElementById('fbo'),inner=document.getElementById('fbi');
+  inner.textContent=emoji;ov.classList.add('show');setTimeout(()=>ov.classList.remove('show'),900);
+}
+function shakeApp(){const a=document.getElementById('app');a.classList.remove('shaking');a.offsetHeight;a.classList.add('shaking');setTimeout(()=>a.classList.remove('shaking'),550);}
+function rageApp(){const a=document.getElementById('app');a.classList.remove('raging');a.offsetHeight;a.classList.add('raging');setTimeout(()=>a.classList.remove('raging'),750);}
+
+/* ══════ REPLIES ══════ */
+function buildReplies(opts,handler){
+  const g=$replies();g.innerHTML='';
+  opts.forEach((txt,i)=>{const btn=document.createElement('button');btn.className='qbtn';btn.dataset.idx=i;btn.innerHTML=txt;btn.onclick=()=>{AC();sndTap();handler(i,btn);};g.appendChild(btn);});
+  // Re-scroll after panel expands so last chat message stays visible
+  setTimeout(scrollDown, 80);
+  setTimeout(scrollDown, 250);
+}
+function disableAll(except){$replies().querySelectorAll('.qbtn,.img-btn').forEach(b=>{if(b!==except)b.classList.add('dis');});}
+function clearReplies(){$replies().innerHTML='';}
+
+/* ══════ ANSWER LOCK (prevents double-tap chaos) ══════ */
+let isAnswering = false;
+
+/* ══════ CONSECUTIVE WRONG ══════ */
+async function checkConsecutiveWrong(wasOk){
+  if(!wasOk){
+    consecutiveWrong++;
+    if(consecutiveWrong>=2 && !voiceGrondeurUsed){consecutiveWrong=0;await showVoiceGrondeur();}
+    else if(consecutiveWrong>=2){consecutiveWrong=0;} // reset counter but don't fire again
+  } else {
+    consecutiveWrong=0;
+  }
+}
+
+/* ══════ INTRO ══════ */
+async function intro(){
+  addSys("Aujourd'hui 💌");await sleep(400);
+  await showTyping(1000);addIn('Salut Baby chat 😘');await sleep(380);
+  await showTyping(1700);addIn("Voici un second site spécialement préparé en ton honneur.<br>Ou plutôt en mon honneur. 😬");await sleep(450);
+  await showTyping(1500);addIn("Voici un quizz en 10 questions sur.... <strong style='color:var(--green)'>Moi!</strong>");await sleep(400);
+  await showTyping(800); addIn("Il est temps de faire tomber les masques !");await sleep(320);
+  await showTyping(650); addIn("Me connais-tu vraiment ?? 🧐");await sleep(320);
+  await showTyping(550); addIn("Who are you? 😏");await sleep(480);
+  await showTyping(900); addIn("Alors... T'es prête ? 👀");await sleep(350);
+
+  const g=$replies();g.innerHTML='';
+  const yes=document.createElement('button');yes.className='qbtn';yes.innerHTML='Je suis prête 🤓';
+  yes.onclick=()=>{AC();sndTap();startQuiz(yes);};
+  const no=document.createElement('button');no.className='qbtn skip';no.innerHTML='Pas maintenant 🫷';
+  no.onclick=()=>{AC();sndTap();window.location.href='index.html';};
+  g.appendChild(yes);g.appendChild(no);scrollDown();
+}
+
+/* ══════ START QUIZ ══════ */
+async function startQuiz(yesBtn){
+  yesBtn.classList.add('sel');
+  $replies().querySelectorAll('.qbtn').forEach(b=>{if(b!==yesBtn)b.classList.add('dis');});
+  addOut('Je suis prête 🤓');clearReplies();
+  await sleep(400);
+  await showTyping(700);addIn("Let's go ! 🚀");
+  buildDots();await sleep(400);
+  await runQuestion();
+}
+
+/* ══════ RUN QUESTION ══════ */
+async function runQuestion(){
+  if(qIdx>=QS.length){await endGame();return;}
+  isAnswering=false; // reset lock for new question
+  const q=QS[qIdx];teleCount=0;teleBtn=null;
+  updateDots(qIdx);
+  await showTyping(1200);addIn(q.intro);await sleep(350);
+
+  // Build question HTML
+  let qHtml=`<strong>Question ${qIdx+1} / ${QS.length}</strong><br><br>${q.q}`;
+  await showTyping(1500);addIn(qHtml);await sleep(250);
+
+  if(q.mechanic==='normal')        {buildReplies(q.opts,(i,b)=>handleNormal(i,b,q));     startTimer(()=>handleTimeout(q));}
+  else if(q.mechanic==='timeout_win'){buildReplies(q.opts,(i,b)=>handleTWClick(i,b,q)); startTimer(()=>handleTWExpire(q));}
+  else if(q.mechanic==='teleport')  {buildReplies(q.opts,(i,b)=>handleTeleport(i,b,q)); startTimer(()=>handleTimeout(q));}
+  else if(q.mechanic==='images')    {buildImageReplies(q,()=>handleTimeout(q));}
+  else if(q.mechanic==='click_image'){buildReplies(q.opts,(i,b)=>handleClickImageWrong(i,b,q));startTimer(()=>handleTimeout(q));}
+}
+
+/* ══════ NORMAL ══════ */
+async function handleNormal(i,btn,q){
+  if(isAnswering)return; isAnswering=true;
+  stopTimer();disableAll(btn);btn.classList.add('sel');addOut(q.opts[i]);
+  let ok,msg,annot,bad;
+  if(q.optResponses){const r=q.optResponses[i];ok=r.ok;msg=r.msg;annot=r.annot;bad=r.bad;}
+  else{ok=(i===q.answer);msg=ok?q.okMsg:q.koMsg;annot=ok?q.okAnnot:q.koAnnot;bad=!ok;}
+  log.push({q:q.q,ok,answer:q.opts[q.answer],chosen:q.opts[i]});
+  if(ok)score++;qIdx++;refreshScore();
+  await sleep(280);
+  if(ok){
+    btn.classList.remove('sel');btn.classList.add('correct-reveal');
+    sndSuccess();showFeedback(q.reaction||'✅');
+    emojiRain(['💚','✅','🎉','💫','🥰','❤️'],18);
+    await showTyping(1300);addIn(msg,q.reaction);if(annot)addAnnot(annot,false);
+  } else {
+    btn.classList.add('wrong');
+    const btns=$replies().querySelectorAll('.qbtn');if(btns[q.answer])btns[q.answer].classList.add('correct-reveal');
+    sndError();shakeApp();showFeedback('😬');
+    await showTyping(1400);addIn(msg);if(annot)addAnnot(annot,bad);
+  }
+  clearReplies();
+  // Trigger Hadès transition after Q5
+  if(q.postAnswer){
+    await sleep(900);
+    await hadesTransition();
+    await sleep(400);
+  } else {
+    await checkConsecutiveWrong(ok);
+    await sleep(ok ? 2500 : 2000);
+  }
+  isAnswering=false;
+  await runQuestion();
+}
+
+/* ══════ IMAGE REPLIES (Q6) ══════ */
+function buildImageReplies(q, timeoutCb){
+  const g=$replies();g.innerHTML='';
+  // Each btn tracks which image it currently shows via dataset.imgIdx
+  q.imgs.forEach((src,i)=>{
+    const btn=document.createElement('button');
+    btn.className='img-btn';
+    btn.dataset.imgIdx=String(i); // logical image index currently displayed
+    btn.innerHTML=`<img src="${src}" alt="Moto ${i+1}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="img-ph" style="display:none">🏍️ Moto ${i+1}</div>`;
+    btn.onclick=()=>{
+      AC();sndTap();
+      handleImageAnswer(parseInt(btn.dataset.imgIdx),btn,q);
+    };
+    g.appendChild(btn);
+  });
+  setTimeout(scrollDown, 80);
+  setTimeout(scrollDown, 280);
+
+  // Swap animation: swaps the IMAGE CONTENT between two buttons (buttons stay in grid)
+  let swapCount=0;
+  let swapInterval=null;
+
+  const doSwap=()=>{
+    const btns=[...g.querySelectorAll('.img-btn')];
+    if(btns.length<2||isAnswering)return;
+
+    // Pick two random distinct buttons
+    let a=Math.floor(Math.random()*btns.length);
+    let b; do{b=Math.floor(Math.random()*btns.length);}while(b===a);
+    const btnA=btns[a], btnB=btns[b];
+
+    // Snapshot current content
+    const idxA=btnA.dataset.imgIdx, idxB=btnB.dataset.imgIdx;
+    const srcA=q.imgs[idxA], srcB=q.imgs[idxB];
+    const numA=parseInt(idxA)+1, numB=parseInt(idxB)+1;
+
+    // Phase 1: flip out both
+    btnA.classList.add('flipping-out');
+    btnB.classList.add('flipping-out');
+    sndWhoosh();
+
+    setTimeout(()=>{
+      // Phase 2: swap content while invisible
+      btnA.dataset.imgIdx=idxB;
+      btnB.dataset.imgIdx=idxA;
+      btnA.innerHTML=`<img src="${srcB}" alt="Moto ${numB}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="img-ph" style="display:none">🏍️ Moto ${numB}</div>`;
+      btnB.innerHTML=`<img src="${srcA}" alt="Moto ${numA}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="img-ph" style="display:none">🏍️ Moto ${numA}</div>`;
+      btnA.classList.remove('flipping-out'); btnA.classList.add('flipping-in');
+      btnB.classList.remove('flipping-out'); btnB.classList.add('flipping-in');
+    },200);
+
+    setTimeout(()=>{
+      btnA.classList.remove('flipping-in');
+      btnB.classList.remove('flipping-in');
+    },420);
+  };
+
+  const startShuffle=()=>{
+    swapInterval=setInterval(()=>{
+      doSwap();
+      swapCount++;
+      if(swapCount>=6){clearInterval(swapInterval);swapInterval=null;}
+    },700);
+  };
+
+  const shuffleAt=timerCurrent-7;
+  const shuffleTimeout=setTimeout(startShuffle,(shuffleAt>0?shuffleAt:1)*1000);
+
+  startTimer(()=>{
+    clearTimeout(shuffleTimeout);
+    if(swapInterval){clearInterval(swapInterval);swapInterval=null;}
+    timeoutCb();
+  });
+}
+
+async function handleImageAnswer(i,btn,q){
+  if(isAnswering)return; isAnswering=true;
+  stopTimer();
+  // Remove any animation classes
+  $replies().querySelectorAll('.img-btn').forEach(b=>{
+    b.classList.remove('flipping-out','flipping-in');
+    if(b!==btn)b.classList.add('dis');
+  });
+  btn.classList.add('sel');
+  addOut(`Moto ${i+1}`);
+  const ok=(i===q.answer);
+  log.push({q:q.q,ok,answer:`Moto ${q.answer+1}`,chosen:`Moto ${i+1}`});
+  if(ok)score++;qIdx++;refreshScore();
+  await sleep(280);
+  if(ok){
+    btn.classList.remove('sel');btn.classList.add('correct-reveal');
+    // Rage/frustration animation instead of happy
+    sndRumble();rageApp();
+    emojiRain(['😤','💢','🤬','😡','💥'],20);
+    showFeedback('🤬');
+    await showTyping(1600);addIn(q.okMsg,q.reaction);if(q.okAnnot)addAnnot(q.okAnnot);
+  } else {
+    btn.classList.add('wrong');
+    const btns=$replies().querySelectorAll('.img-btn');if(btns[q.answer])btns[q.answer].classList.add('correct-reveal');
+    sndError();shakeApp();showFeedback('😏');
+    await showTyping(1300);addIn(q.koMsg);if(q.koAnnot)addAnnot(q.koAnnot,true);
+  }
+  clearReplies();
+  await checkConsecutiveWrong(ok);
+  await sleep(ok ? 2500 : 2000);
+  isAnswering=false;
+  await runQuestion();
+}
+
+/* ══════ CLICK IMAGE (Q7) ══════ */
+// Called when player taps the lasagna image in the chat
+async function handleLasagnaClick(){
+  const q=QS[qIdx];if(!q||q.mechanic!=='click_image')return;
+  if(isAnswering)return; isAnswering=true;
+  stopTimer();clearReplies();
+  addOut('J\'ai cliqué sur la lasagne ! 🍝');
+  log.push({q:q.q,ok:true,answer:'lasagna.png',chosen:'lasagna.png'});
+  score++;qIdx++;refreshScore();
+  sndSuccess();
+  showFeedback('😱');
+  emojiRain(['😱','🍝','🤯','✅','💚'],20);
+  await sleep(400);
+  // Multi-line dramatic reveal
+  const lines=q.okMsg.split('\n');
+  for(const line of lines){
+    await showTyping(900);addIn(line);await sleep(300);
+  }
+  await checkConsecutiveWrong(true);
+  await sleep(2500);
+  isAnswering=false;
+  await runQuestion();
+}
+
+async function handleClickImageWrong(i,btn,q){
+  if(isAnswering)return; isAnswering=true;
+  // Clicked a button instead of the image
+  stopTimer();disableAll(btn);btn.classList.add('wrong');
+  addOut(q.opts[i]);
+  log.push({q:q.q,ok:false,answer:'lasagna.png',chosen:q.opts[i]});
+  qIdx++;refreshScore();
+  await sleep(280);sndError();shakeApp();showFeedback('😢');
+  await showTyping(1400);addIn(q.koMsg);if(q.koAnnot)addAnnot(q.koAnnot,true);
+  clearReplies();
+  await checkConsecutiveWrong(false);
+  await sleep(2000);
+  isAnswering=false;
+  await runQuestion();
+}
+
+/* ══════ TIMEOUT ══════ */
+async function handleTimeout(q){
+  if(isAnswering)return; isAnswering=true;
+  clearReplies();if(teleBtn){teleBtn.remove();teleBtn=null;}
+  const ans=q.answer>=0?(q.imgs?`Moto ${q.answer+1}`:q.opts[q.answer]):'—';
+  log.push({q:q.q,ok:false,answer:ans,chosen:'⏱ Pas de réponse'});
+  qIdx++;refreshScore();sndError();shakeApp();showFeedback('⏱');
+  await showTyping(1200);addIn(q.toMsg||`⏱ Temps écoulé !`);
+  if(q.toAnnot)addAnnot(q.toAnnot,true);
+  clearReplies();
+  if(!q.postAnswer){await checkConsecutiveWrong(false);}
+  await sleep(2000);
+  isAnswering=false;
+  await runQuestion();
+}
+
+/* ══════ TIMEOUT_WIN ══════ */
+async function handleTWClick(i,btn,q){
+  if(isAnswering)return; isAnswering=true;
+  stopTimer();disableAll(btn);btn.classList.add('wrong');addOut(q.opts[i]);
+  log.push({q:q.q,ok:false,answer:'Le silence 🤫',chosen:q.opts[i]});
+  qIdx++;refreshScore();await sleep(280);sndError();shakeApp();showFeedback('😅');
+  await showTyping(1500);addIn(q.koMsg);if(q.koAnnot)addAnnot(q.koAnnot,true);
+  clearReplies();await checkConsecutiveWrong(false);await sleep(2000);
+  isAnswering=false;
+  await runQuestion();
+}
+async function handleTWExpire(q){
+  if(isAnswering)return; isAnswering=true;
+  clearReplies();log.push({q:q.q,ok:true,answer:'Le silence 🤫',chosen:'Le silence 🤫'});
+  score++;qIdx++;refreshScore();sndSuccess();showFeedback(q.reaction||'🧠');
+  emojiRain(['🧠','💚','😂','✨','🤫'],18);
+  await showTyping(1800);addIn(q.toMsg||q.okMsg,q.reaction);if(q.okAnnot||q.toAnnot)addAnnot(q.toAnnot||q.okAnnot);
+  await checkConsecutiveWrong(true);await sleep(2500);
+  isAnswering=false;
+  await runQuestion();
+}
+
+/* ══════ TELEPORT ══════ */
+async function handleTeleport(i,btn,q){
+  if(i!==q.teleportBtn){
+    // Wrong button — show message and move on
+    if(isAnswering)return; isAnswering=true;
+    stopTimer();
+    if(teleBtn){teleBtn.remove();teleBtn=null;}
+    disableAll(btn);btn.classList.add('wrong');
+    addOut(q.opts[i]);
+    log.push({q:q.q,ok:false,answer:q.opts[q.teleportBtn],chosen:q.opts[i]});
+    qIdx++;refreshScore();
+    await sleep(280);sndError();shakeApp();showFeedback('😬');
+    if(q.koMsg){await showTyping(1200);addIn(q.koMsg);}
+    clearReplies();
+    await checkConsecutiveWrong(false);
+    await sleep(2000);
+    isAnswering=false;
+    await runQuestion();
+    return;
+  }
+  teleCount++;
+  if(teleCount<TELE_MAX){
+    if(teleCount===1){
+      const r=btn.getBoundingClientRect();
+      btn.style.cssText=`position:fixed;width:${r.width}px;height:${r.height}px;top:${r.top}px;left:${r.left}px;margin:0;z-index:9999;transition:none;`;
+      btn.offsetHeight;teleBtn=btn;
+    }
+    const bw=btn.offsetWidth||120,bh=btn.offsetHeight||44;
+    const nx=12+Math.random()*(window.innerWidth-bw-24);
+    const ny=90+Math.random()*(window.innerHeight-bh-120);
+    btn.style.transition='top .42s cubic-bezier(.34,1.56,.64,1),left .42s cubic-bezier(.34,1.56,.64,1)';
+    btn.style.top=ny+'px';btn.style.left=nx+'px';sndWhoosh();
+  } else {
+    if(isAnswering)return; isAnswering=true;
+    stopTimer();if(teleBtn){teleBtn.remove();teleBtn=null;}clearReplies();
+    log.push({q:q.q,ok:true,answer:q.opts[q.answer],chosen:q.opts[q.answer]});
+    score++;qIdx++;refreshScore();await sleep(200);
+    sndSuccess();showFeedback('😤');emojiRain(['😤','🙈','😂','💚','🦥'],16);
+    await showTyping(1600);addIn(q.okMsg,q.reaction);if(q.okAnnot)addAnnot(q.okAnnot);
+    clearReplies();await checkConsecutiveWrong(true);await sleep(2500);
+    isAnswering=false;
+    await runQuestion();
+  }
+}
+
+/* ══════ END GAME ══════ */
+async function endGame(){
+  stopTimer();clearReplies();await showTyping(2000);
+
+  // Score tiers
+  let msg, grade, sub, rewardType, prizeTitle, prizeDesc, prizeSig;
+
+  if(score===10){
+    msg=`10/10 ! 🎯 PARFAIT. Je suis chanceux de t'avoir. Vraiment. 😍`;
+    grade='Score Parfait 🏆'; sub='"Elle me connaît mieux que moi-même"';
+    rewardType='scratch';
+    prizeTitle='Bon YESMAN 👑';
+    prizeDesc='Pendant <strong>1 semaine entière</strong>, je deviens YESMAN.<br>Ta volonté = ma loi. Sans exception. 😏';
+    prizeSig='Je suis chanceux de t\'avoir. Pour te remercier. ♥';
+  } else if(score===9){
+    msg=`9/10 ! Wow INCROYABLE. Tu me connais comme ta poche ! Je suis impressionné. 🤯`;
+    grade='Connaissance Absolue ⭐⭐⭐'; sub='"Elle me connaît comme sa poche"';
+    rewardType='scratch';
+    prizeTitle='Bon Illimité 🎁';
+    prizeDesc='Voici un bon pour...<br><strong>ce que tu veux.</strong><br>Absolument n\'importe quoi. 😊';
+    prizeSig='T\'es incroyable. Vraiment. ♥';
+  } else if(score>=6){
+    msg=`${score}/10 ! Pas mal ! T'as fait des efforts. 😏`;
+    grade='Bonne Connaissance ⭐⭐'; sub='"Quelques zones d\'ombre, mais on gère"';
+    rewardType='scratch';
+    prizeTitle='Bon Choix 😊';
+    prizeDesc='Tu as le choix entre :<br>💆 Un massage<br>😘 Des bisous<br>💤 1 semaine de dodo extra';
+    prizeSig='Choisis bien. ♥';
+  } else {
+    msg=`${score}/10. Tu es éclaté(e) ! 💀`;
+    grade='Urgence Conjugale 🆘'; sub='"Qui suis-je pour toi, franchement ??"';
+    rewardType='gif';
+  }
+
+  addIn(msg);updateDots(QS.length);
+  if(score>=9){sndVictory();emojiRain(['🎉','💚','🥳','✨','💫','💕'],28,['24px','32px','38px']);}
+  else if(score>=6) emojiRain(['😊','💪','💚'],14);
+  else              emojiRain(['💀','😅','😬'],12);
+  await sleep(2800);
+
+  const fs=document.getElementById('final');
+  const recap=log.map((l,i)=>{
+    const qT=QS[i].q.replace(/<[^>]+>/g,'').replace(/^[^\s]+ /,'').trim();
+    const correctLabel = l.answer || '—';
+    return `<div class="recap-item${l.ok?' ok':''}">
+      <span class="recap-ico">${l.ok?'✅':'❌'}</span>
+      <div style="flex:1">
+        <div class="recap-q">${qT}</div>
+        <div class="recap-a">✔ ${correctLabel}${!l.ok&&l.chosen&&l.chosen!==correctLabel?' · Ton choix : '+l.chosen:''}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  const rewardHTML = rewardType==='scratch' ? `
+    <div>
+      <div class="scr-hint">🎁 Gratte pour révéler ta surprise !</div>
+      <div id="scratch-box">
+        <div id="prize-inner">
+          <div class="prize-e">🎁</div>
+          <div class="prize-t">${prizeTitle}</div>
+          <div class="prize-d">${prizeDesc}</div>
+          <div class="prize-l">${prizeSig}</div>
+        </div>
+        <canvas id="scratch-canvas"></canvas>
+      </div>
+      <p style="font-size:11px;color:var(--muted);text-align:center;margin-top:7px;">← Glisse le doigt pour gratter</p>
+    </div>
+  ` : `
+    <div style="text-align:center;padding:16px 0 8px;">
+      <div style="font-size:72px;line-height:1;margin-bottom:10px;">😵</div>
+      <div class="bub in" style="max-width:88%;display:inline-block;text-align:left;">
+        <span style="font-family:'Caveat',cursive;font-size:16px;">Tu es éclaté(e) ! Voici ta récompense. 🏆<br><br>
+        <span style="font-size:28px">🏅</span> Le badge du joueur le plus courageux qui n'a RIEN retenu. 😂<br><br>
+        La prochaine fois, révise sérieusement. 📚</span>
+        <div class="bm"><span class="bt">${ts()}</span></div>
+      </div>
+    </div>
+  `;
+
+  fs.innerHTML=`
+    <div class="fs-hdr">
+      <div class="fs-score">${score}/10</div>
+      <div class="fs-grade"><strong>${grade}</strong><br><span>${sub}</span></div>
+    </div>
+    <div class="fs-chat">
+      <div class="row sys" style="margin:0;"><div class="date-pill">Résultats du quiz 💌</div></div>
+      ${recap}
+      ${rewardHTML}
+      <button class="fs-restart" onclick="location.reload()">🔄 Rejouer</button>
+    </div>
+  `;
+  fs.style.display='block';fs.style.opacity='0';fs.style.transition='opacity .5s';
+  await sleep(30);fs.style.opacity='1';
+  if(rewardType==='scratch'){setTimeout(initScratch,700);setTimeout(sndVictory,900);}
+}
+
+/* ══════ SCRATCH CARD ══════ */
+function initScratch(){
+  const canvas=document.getElementById('scratch-canvas');if(!canvas)return;
+  const prize=document.getElementById('prize-inner');const rect=prize.getBoundingClientRect();
+  canvas.width=rect.width;canvas.height=rect.height;
+  const ctx=canvas.getContext('2d');
+  const gr=ctx.createLinearGradient(0,0,canvas.width,canvas.height);
+  gr.addColorStop(0,'#263238');gr.addColorStop(.5,'#37474f');gr.addColorStop(1,'#263238');
+  ctx.fillStyle=gr;ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle='rgba(255,255,255,.035)';
+  for(let x=0;x<canvas.width;x+=14)for(let y=0;y<canvas.height;y+=14)if((Math.floor(x/14)+Math.floor(y/14))%2===0)ctx.fillRect(x,y,14,14);
+  ctx.fillStyle='rgba(37,211,102,.85)';ctx.font=`bold ${Math.min(canvas.width/6.5,21)}px Roboto,sans-serif`;
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('🎁 GRATTE ICI 🎁',canvas.width/2,canvas.height/2-14);
+  ctx.fillStyle='rgba(255,255,255,.42)';ctx.font=`${Math.min(canvas.width/10,13)}px Roboto,sans-serif`;
+  ctx.fillText("Ta surprise t'attend...",canvas.width/2,canvas.height/2+14);
+  let drawing=false,scrPx=0,revealed=false;const total=canvas.width*canvas.height;
+  function scratch(x,y){ctx.globalCompositeOperation='destination-out';ctx.beginPath();ctx.arc(x,y,30,0,Math.PI*2);ctx.fill();scrPx+=Math.PI*900;if(!revealed&&scrPx/total>.47){revealed=true;setTimeout(()=>{canvas.style.transition='opacity .75s';canvas.style.opacity='0';setTimeout(()=>{canvas.style.display='none';sndVictory();emojiRain(['🎁','💚','🥳','✨','🎊','💕'],28,['26px','32px','40px']);},750);},150);}}
+  function evPos(e){const cr=canvas.getBoundingClientRect();const sx=canvas.width/cr.width,sy=canvas.height/cr.height;const src=e.touches?e.touches[0]:e;return{x:(src.clientX-cr.left)*sx,y:(src.clientY-cr.top)*sy};}
+  canvas.addEventListener('mousedown',e=>{AC();drawing=true;const p=evPos(e);scratch(p.x,p.y);});
+  canvas.addEventListener('mousemove',e=>{if(drawing){const p=evPos(e);scratch(p.x,p.y);}});
+  canvas.addEventListener('mouseup',()=>drawing=false);
+  canvas.addEventListener('touchstart',e=>{e.preventDefault();AC();drawing=true;const p=evPos(e);scratch(p.x,p.y);},{passive:false});
+  canvas.addEventListener('touchmove',e=>{e.preventDefault();if(drawing){const p=evPos(e);scratch(p.x,p.y);}},{passive:false});
+  canvas.addEventListener('touchend',()=>drawing=false);
+}
+
+window.addEventListener('DOMContentLoaded',()=>intro());
+</script>
+</body>
+</html>
