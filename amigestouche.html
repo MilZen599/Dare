@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
@@ -8,181 +9,226 @@
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
-    :root {
-      --green: #4caf7d;
-      --green-light: #e8f5ee;
-      --green-dark: #3a9165;
-      --gray-bg: #f2f3f5;
-      --gray-border: #e4e4e4;
-      --text-dark: #1a1a1a;
-      --text-mid: #555;
-      --text-light: #9a9a9a;
-      --orange: #f0883e;
-      --white: #fff;
-      --nav-h: 68px;
-    }
+```
+:root {
+  --green: #4caf7d;
+  --green-light: #e8f5ee;
+  --gray-bg: #f2f3f5;
+  --gray-border: #e4e4e4;
+  --text-dark: #1a1a1a;
+  --text-mid: #555;
+  --text-light: #9a9a9a;
+  --orange: #f0883e;
+  --white: #fff;
+  --nav-h: 68px;
+}
 
-    body {
-      font-family: 'Nunito', sans-serif;
-      background: var(--gray-bg);
-      color: var(--text-dark);
-      min-height: 100vh;
-      max-width: 480px;
-      margin: 0 auto;
-    }
+body {
+  font-family: 'Nunito', sans-serif;
+  background: var(--gray-bg);
+  color: var(--text-dark);
+  min-height: 100vh;
+  max-width: 480px;
+  margin: 0 auto;
+  user-select: none;
+}
 
-    /* TOP BAR */
-    .top-bar {
-      background: var(--white);
-      border-bottom: 1px solid var(--gray-border);
-      padding: 12px 16px 0;
-      position: sticky; top: 0; z-index: 100;
-    }
-    .top-icons {
-      display: flex; align-items: center; gap: 14px; margin-bottom: 12px;
-    }
-    .icon-btn {
-      background: none; border: none; cursor: pointer;
-      padding: 4px; color: var(--text-dark); display: flex; align-items: center;
-    }
-    .app-title {
-      font-size: 11px; font-weight: 800; color: var(--green);
-      letter-spacing: 1.5px; text-transform: uppercase; margin-left: auto;
-    }
-    .child-header {
-      display: flex; align-items: center; justify-content: center;
-      gap: 10px; padding: 10px 0 14px;
-      border-top: 1px solid var(--gray-border);
-    }
-    .child-avatar {
-      width: 38px; height: 38px; border-radius: 50%;
-      background: linear-gradient(135deg, #f9a825, #ef6c00);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 18px; color: white; font-weight: 800;
-    }
-    .child-name { font-size: 20px; font-weight: 800; }
+/* TOP BAR */
+.top-bar {
+  background: var(--white);
+  border-bottom: 1px solid var(--gray-border);
+  padding: 12px 16px 0;
+  position: sticky; top: 0; z-index: 100;
+}
+.top-icons { display: flex; align-items: center; gap: 14px; margin-bottom: 12px; }
+.icon-btn {
+  background: none; border: none; cursor: pointer;
+  padding: 4px; color: var(--text-dark); display: flex; align-items: center;
+}
+.app-title {
+  font-size: 11px; font-weight: 800; color: var(--green);
+  letter-spacing: 1.5px; text-transform: uppercase; margin-left: auto;
+}
+.child-header {
+  display: flex; align-items: center; justify-content: center;
+  gap: 10px; padding: 10px 0 14px;
+  border-top: 1px solid var(--gray-border);
+}
+.child-avatar {
+  width: 38px; height: 38px; border-radius: 50%;
+  background: linear-gradient(135deg, #f9a825, #ef6c00);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; color: white; font-weight: 800;
+}
+.child-name { font-size: 20px; font-weight: 800; }
 
-    /* DATE NAV */
-    .date-nav {
-      background: var(--white);
-      display: flex; align-items: center; justify-content: center;
-      gap: 16px; padding: 10px 16px;
-      border-bottom: 1px solid var(--gray-border);
-    }
-    .date-nav button {
-      background: none; border: none; cursor: pointer;
-      color: var(--text-light); display: flex; align-items: center; padding: 4px 8px;
-    }
-    .date-pill {
-      background: var(--white); border: 1.5px solid var(--gray-border);
-      border-radius: 8px; padding: 8px 20px;
-      font-size: 15px; font-weight: 700; min-width: 150px; text-align: center;
-    }
+/* DATE NAV */
+.date-nav {
+  background: var(--white);
+  display: flex; align-items: center; justify-content: center;
+  gap: 16px; padding: 10px 16px;
+  border-bottom: 1px solid var(--gray-border);
+}
+.date-nav button {
+  background: none; border: none; cursor: pointer;
+  color: var(--text-light); display: flex; align-items: center; padding: 4px 8px;
+  transition: color 0.15s;
+}
+.date-nav button:hover { color: var(--green); }
+.date-nav button:disabled { color: #ddd; cursor: default; }
+.date-pill {
+  background: var(--white); border: 1.5px solid var(--gray-border);
+  border-radius: 8px; padding: 8px 20px;
+  font-size: 15px; font-weight: 700; min-width: 150px; text-align: center;
+  transition: all 0.2s;
+}
 
-    /* CONTENT */
-    .content { padding: 0 0 calc(var(--nav-h) + 16px); }
+/* SWIPE ZONES — invisible left/right hit areas */
+.swipe-zone {
+  position: fixed; top: 0; bottom: var(--nav-h);
+  width: 28%; z-index: 50; cursor: pointer;
+}
+#zone-prev { left: 0; }
+#zone-next { right: 0; }
 
-    /* SECTION CARD */
-    .section-card {
-      background: var(--white);
-      margin: 12px 12px 0;
-      border-radius: 12px; overflow: hidden;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.07);
-    }
-    .section-label {
-      font-size: 17px; font-weight: 800;
-      color: var(--text-dark); padding: 16px 16px 10px;
-    }
+/* PAGE TRANSITION */
+.content {
+  padding: 0 0 calc(var(--nav-h) + 16px);
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+.content.slide-out-left  { opacity: 0; transform: translateX(-24px); }
+.content.slide-out-right { opacity: 0; transform: translateX(24px); }
+.content.slide-in-left   { opacity: 0; transform: translateX(24px); }
+.content.slide-in-right  { opacity: 0; transform: translateX(-24px); }
 
-    /* JOURNAL */
-    .journal-inner { padding: 0 16px 16px; }
-    .journal-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
-    .journal-icon {
-      width: 40px; height: 40px; border-radius: 50%;
-      background: var(--green-light);
-      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-    }
-    .journal-title { font-size: 15px; font-weight: 800; }
-    .journal-subtitle { font-size: 12px; color: var(--text-light); font-weight: 600; }
-    .journal-text { font-size: 14px; line-height: 1.7; color: var(--text-mid); }
-    .journal-author {
-      margin-top: 14px; font-size: 12px;
-      color: var(--text-light); font-weight: 700; text-align: right;
-    }
+/* SECTION CARD */
+.section-card {
+  background: var(--white);
+  margin: 12px 12px 0;
+  border-radius: 12px; overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+}
+.section-label {
+  font-size: 17px; font-weight: 800;
+  color: var(--text-dark); padding: 16px 16px 10px;
+}
 
-    /* REPAS INLINE */
-    .repas-inline {
-      display: flex; align-items: flex-start; gap: 10px;
-      padding: 8px 16px 18px;
-      overflow-x: auto; -webkit-overflow-scrolling: touch;
-    }
-    .food-chip {
-      display: flex; flex-direction: column; align-items: center;
-      gap: 6px; min-width: 62px; flex-shrink: 0;
-    }
-    .food-icon {
-      width: 52px; height: 52px; border-radius: 50%;
-      background: #c8e6c9;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .food-label {
-      font-size: 11px; font-weight: 700;
-      color: var(--text-mid); text-align: center; line-height: 1.3;
-    }
+/* JOURNAL */
+.journal-inner { padding: 0 16px 16px; }
+.journal-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.journal-icon {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: var(--green-light);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.journal-title { font-size: 15px; font-weight: 800; }
+.journal-subtitle { font-size: 12px; color: var(--text-light); font-weight: 600; }
+.journal-text { font-size: 14px; line-height: 1.7; color: var(--text-mid); }
+.journal-author {
+  margin-top: 14px; font-size: 12px;
+  color: var(--text-light); font-weight: 700; text-align: right;
+}
 
-    /* SIESTE */
-    .sieste-row {
-      display: flex; align-items: center; gap: 14px; padding: 14px 16px;
-    }
-    .sleep-icon {
-      width: 52px; height: 52px; border-radius: 50%;
-      background: #e8eaf6;
-      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-    }
-    .sleep-time { font-size: 16px; font-weight: 700; }
-    .sleep-sub { font-size: 12px; color: var(--text-light); font-weight: 600; margin-top: 2px; }
+/* REPAS */
+.repas-inline {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 8px 16px 18px;
+  overflow-x: auto; -webkit-overflow-scrolling: touch;
+}
+.food-chip {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 6px; min-width: 62px; flex-shrink: 0;
+}
+.food-icon {
+  width: 52px; height: 52px; border-radius: 50%;
+  background: #c8e6c9;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; line-height: 1;
+}
+.food-label {
+  font-size: 11px; font-weight: 700;
+  color: var(--text-mid); text-align: center; line-height: 1.3;
+}
 
-    /* ÉDUCATRICES */
-    .educ-row {
-      display: flex; align-items: center; gap: 14px; padding: 14px 16px;
-    }
-    .educ-avatar {
-      width: 48px; height: 48px; border-radius: 50%;
-      background: #5c6bc0;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 20px; font-weight: 800; color: white; flex-shrink: 0;
-    }
-    .educ-label { font-size: 12px; color: var(--text-light); font-weight: 700; }
-    .educ-name { font-size: 17px; font-weight: 800; color: var(--text-dark); margin-top: 1px; }
+/* REPAS GROUPED */
+.repas-group { padding: 0 16px 14px; }
+.repas-group-title {
+  font-size: 12px; font-weight: 800; color: var(--text-light);
+  text-transform: uppercase; letter-spacing: 0.8px;
+  margin-bottom: 8px; margin-top: 12px;
+}
+.repas-group-row {
+  display: flex; align-items: flex-start; gap: 8px; flex-wrap: wrap;
+}
 
-    /* BOTTOM NAV */
-    .bottom-nav {
-      position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
-      width: 100%; max-width: 480px; background: var(--white);
-      border-top: 1px solid var(--gray-border);
-      display: flex; height: var(--nav-h); z-index: 100;
-    }
-    .nav-item {
-      flex: 1; display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      gap: 4px; cursor: pointer; text-decoration: none;
-      color: var(--text-light); font-size: 11px; font-weight: 700; padding-bottom: 4px;
-    }
-    .nav-item.active { color: var(--green); }
-    .nav-item svg { width: 24px; height: 24px; }
-    .nav-badge { position: relative; }
-    .badge {
-      position: absolute; top: -4px; right: -6px;
-      background: var(--orange); color: white;
-      font-size: 10px; font-weight: 800;
-      width: 17px; height: 17px; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-    }
+/* SIESTE */
+.sieste-row { display: flex; align-items: center; gap: 14px; padding: 14px 16px; }
+.sleep-icon {
+  width: 52px; height: 52px; border-radius: 50%;
+  background: #e8eaf6;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.sleep-time { font-size: 16px; font-weight: 700; }
+.sleep-sub { font-size: 12px; color: var(--text-light); font-weight: 600; margin-top: 2px; }
+
+/* ÉDUCATRICES */
+.educ-row { display: flex; align-items: center; gap: 14px; padding: 14px 16px; }
+.educ-avatar {
+  width: 48px; height: 48px; border-radius: 50%;
+  background: #5c6bc0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; font-weight: 800; color: white; flex-shrink: 0;
+}
+.educ-label { font-size: 12px; color: var(--text-light); font-weight: 700; }
+.educ-name { font-size: 17px; font-weight: 800; color: var(--text-dark); margin-top: 1px; }
+
+/* DOT INDICATOR */
+.day-dots {
+  display: flex; justify-content: center; gap: 6px;
+  padding: 10px 0 4px;
+}
+.dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--gray-border); transition: background 0.2s;
+}
+.dot.active { background: var(--green); }
+
+/* BOTTOM NAV */
+.bottom-nav {
+  position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+  width: 100%; max-width: 480px; background: var(--white);
+  border-top: 1px solid var(--gray-border);
+  display: flex; height: var(--nav-h); z-index: 100;
+}
+.nav-item {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 4px; cursor: pointer; text-decoration: none;
+  color: var(--text-light); font-size: 11px; font-weight: 700; padding-bottom: 4px;
+}
+.nav-item.active { color: var(--green); }
+.nav-item svg { width: 24px; height: 24px; }
+.nav-badge { position: relative; }
+.badge {
+  position: absolute; top: -4px; right: -6px;
+  background: var(--orange); color: white;
+  font-size: 10px; font-weight: 800;
+  width: 17px; height: 17px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+}
+```
+
   </style>
 </head>
 <body>
 
+  <!-- INVISIBLE SWIPE/CLICK ZONES -->
+
+  <div class="swipe-zone" id="zone-prev" onclick="navigate(-1)"></div>
+  <div class="swipe-zone" id="zone-next" onclick="navigate(1)"></div>
+
   <!-- TOP BAR -->
+
   <div class="top-bar">
     <div class="top-icons">
       <button class="icon-btn">
@@ -207,14 +253,15 @@
   </div>
 
   <!-- DATE NAV -->
+
   <div class="date-nav">
-    <button>
+    <button id="btn-prev" onclick="navigate(-1)">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
         <polyline points="15 18 9 12 15 6"/>
       </svg>
     </button>
-    <div class="date-pill">2026-04-10</div>
-    <button>
+    <div class="date-pill" id="date-display">2026-04-10</div>
+    <button id="btn-next" onclick="navigate(1)">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
         <polyline points="9 18 15 12 9 6"/>
       </svg>
@@ -222,119 +269,11 @@
   </div>
 
   <!-- CONTENT -->
-  <div class="content">
 
-    <!-- JOURNAL -->
-    <div class="section-card" style="margin-top:12px;">
-      <div class="section-label">Journal du jour</div>
-      <div class="journal-inner">
-        <div class="journal-header">
-          <div class="journal-icon">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4caf7d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/>
-            </svg>
-          </div>
-          <div>
-            <div class="journal-title">Opération, Jour 1</div>
-            <div class="journal-subtitle">Vendredi 10 avril 2026</div>
-          </div>
-        </div>
-        <div class="journal-text">
-          Je vais chercher Zayn à la garderie vendredi soir à 16h00, on rentre tranquillement à métro. Il me demande si tu es à la maison, je lui explique que tu es partie chercher le circuit, en attendant on va faire les dodo avec papa. Il a l'air satisfait de ma réponse 😊.<br><br>
-          Une fois à la maison, je fais le tour rapide de la maison pour éviter tout problème !! Les amandes ? Caché ! Les couteaux ? Caché ! Dès qu'il s'endort je ferai un tour complet de la maison !<br><br>
-          Après on joue à « je vais te manger ! » pendant un petit moment. Ensuite, même si on a plein de repas dans le frigo, je propose une activité cuisine pour passer le temps. Déjà 18h30 ! Le temps de manger, prendre un bain et au dodo !
-        </div>
-        <div class="journal-author">✍️ Rédigé par Papa</div>
-      </div>
-    </div>
-
-    <!-- REPAS -->
-    <div class="section-card" style="margin-top:12px;">
-      <div class="section-label">Repas</div>
-      <div class="repas-inline">
-
-        <div class="food-chip">
-          <div class="food-icon">
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#388e3c" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 3c-4 3-5 7-4 10h8c1-3 0-7-4-10z"/>
-              <ellipse cx="12" cy="14" rx="6" ry="4"/>
-              <path d="M6 18h12"/>
-            </svg>
-          </div>
-          <span class="food-label">Risotto<br>champignons</span>
-        </div>
-
-        <div class="food-chip">
-          <div class="food-icon">
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#388e3c" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M5 17c0 0 2-8 10-10"/>
-              <path d="M5 17c5 4 11 1 14-5"/>
-              <path d="M15 7c1-1 3 0 3 1"/>
-            </svg>
-          </div>
-          <span class="food-label">Banane</span>
-        </div>
-
-        <div class="food-chip">
-          <div class="food-icon">
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#388e3c" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 3v2"/>
-              <path d="M5 8a7 7 0 0014 0"/>
-              <path d="M5 8c0 5 3 10 7 13 4-3 7-8 7-13"/>
-            </svg>
-          </div>
-          <span class="food-label">Pomme</span>
-        </div>
-
-        <div class="food-chip">
-          <div class="food-icon">
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#388e3c" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 2c0 0-5 5-5 11h10c0-6-5-11-5-11z"/>
-              <path d="M7 13c0 4 2 7 5 9 3-2 5-5 5-9"/>
-              <path d="M9 4c-2 1-3 2-2 4"/>
-              <path d="M15 4c2 1 3 2 2 4"/>
-            </svg>
-          </div>
-          <span class="food-label">Carottes</span>
-        </div>
-
-      </div>
-    </div>
-
-    <!-- SIESTE -->
-    <div class="section-card" style="margin-top:12px;">
-      <div class="section-label">Sieste</div>
-      <div class="sieste-row">
-        <div class="sleep-icon">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#5c6bc0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
-            <circle cx="17.5" cy="6.5" r="0.8" fill="#5c6bc0"/>
-            <circle cx="19.5" cy="9" r="0.8" fill="#5c6bc0"/>
-            <circle cx="15" cy="8.5" r="0.8" fill="#5c6bc0"/>
-          </svg>
-        </div>
-        <div>
-          <div class="sleep-time">Début 20h00</div>
-          <div class="sleep-sub">Heure de coucher</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ÉDUCATRICES.TEURS -->
-    <div class="section-card" style="margin-top:12px; margin-bottom:0;">
-      <div class="section-label">Éducatrices.teurs</div>
-      <div class="educ-row">
-        <div class="educ-avatar">P</div>
-        <div>
-          <div class="educ-label">Rédigé par :</div>
-          <div class="educ-name">Papa</div>
-        </div>
-      </div>
-    </div>
-
-  </div><!-- /content -->
+  <div class="content" id="page-content"></div>
 
   <!-- BOTTOM NAV -->
+
   <nav class="bottom-nav">
     <a class="nav-item active" href="#">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -364,6 +303,184 @@
       Confirmation d'absence
     </a>
   </nav>
+
+<script>
+  // ── DATA ──────────────────────────────────────────────
+  const days = [
+    {
+      date: "2026-04-10",
+      label: "Vendredi 10 avril 2026",
+      journalTitle: "Opération, Jour 1",
+      journalText: `Je vais chercher Zayn à la garderie vendredi soir à 16h00, on rentre tranquillement à métro. Il me demande si tu es à la maison, je lui explique que tu es partie chercher le circuit, en attendant on va faire les dodo avec papa. Il a l'air satisfait de ma réponse 😊.<br><br>
+Une fois à la maison, je fais le tour rapide de la maison pour éviter tout problème !! Les amandes ? Caché ! Les couteaux ? Caché ! Dès qu'il s'endort je ferai un tour complet de la maison !<br><br>
+Après on joue à « je vais te manger ! » pendant un petit moment. Ensuite, même si on a plein de repas dans le frigo, je propose une activité cuisine pour passer le temps. Déjà 18h30 ! Le temps de manger, prendre un bain et au dodo !`,
+      repas: [
+        { emoji: "🍄", label: "Risotto\nchampignons" },
+        { emoji: "🍌", label: "Banane" },
+        { emoji: "🍎", label: "Pomme" },
+        { emoji: "🥕", label: "Carottes" },
+      ],
+      sieste: { debut: "20h00", label: "Heure de coucher" },
+      auteur: "Papa",
+    },
+    {
+      date: "2026-04-11",
+      label: "Samedi 11 avril 2026",
+      journalTitle: "Opération, Jour 2",
+      journalText: `Réveillé à 8h30 ce matin, je suis de très bonne humeur ! Je déjeune un bol de céréales puis fais du vélo dans la maison.<br><br>
+Vers 9h je découvre un mystérieux lapin en chocolat sur le lit. C'est maman la magicienne, c'est sûr ! 🐰🍫<br><br>
+Quelques bouchées de choco et c'est l'heure d'aller au Biodôme ! Arrivé au Biodôme à 10h00, je suis très sage et écoute les consignes. Je m'amuse bien.<br><br>
+On finit le Biodôme et on mange dans le calme à 11h30. Il est quand même tôt, on va à l'Insectarium. Sur le chemin je ramasse des feuilles pour maman 🍃. J'ai aimé l'Insectarium, c'est une super visite très amusante !<br><br>
+On finit la visite et même si je ne veux pas l'admettre, je suis épuisé ! Papa accepte de me porter pour la première fois pour aller au métro, je m'endors presque sur son épaule.<br><br>
+Nous arrivons à la maison à 15h00, je fais un petit (très gros) popo, une petite douche et puis on goûte une compote avec des oignons. Pour se reposer un peu je regarde Ponyo ! 🎬<br><br>
+Dès que c'est fini on va dans la cuisine préparer le repas. J'en profite pour appeler mamie 👵.<br><br>
+Une fois que c'est fait, on va au fruitier pour chercher de quoi préparer un carotte cake et banana bread. Je dévore tout le cake !! Et il est déjà 20h 😱😱.<br><br>
+Une histoire rapide parce qu'on est en retard et au dodo ! On a passé une très belle journée. 🌟`,
+      repasGrouped: [
+        { titre: "Matin", items: [{ emoji: "🥣", label: "Céréales" }, { emoji: "🌰", label: "Pignons" }, { emoji: "🍫", label: "Chocolat" }] },
+        { titre: "Goûter 1", items: [{ emoji: "🍎", label: "Pomme" }] },
+        { titre: "Midi", items: [{ emoji: "🐟", label: "Thon quinoa" }, { emoji: "🍊", label: "Orange" }, { emoji: "🥗", label: "Chips légumes" }] },
+        { titre: "Goûter 2", items: [{ emoji: "🥕", label: "Carottes" }, { emoji: "🍎", label: "Pomme" }, { emoji: "🍌", label: "Banane" }] },
+        { titre: "Soir", items: [{ emoji: "🎂", label: "Carotte cake" }] },
+      ],
+      sieste: { debut: "8h30", fin: "20h00", label: "Réveil → Coucher" },
+      auteur: "Papa",
+    },
+  ];
+
+  let currentIndex = 0;
+
+  // ── SVG icons ──
+  const iconPen = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4caf7d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>`;
+  const iconMoon = `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#5c6bc0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/><circle cx="17.5" cy="6.5" r="0.8" fill="#5c6bc0"/><circle cx="19.5" cy="9" r="0.8" fill="#5c6bc0"/><circle cx="15" cy="8.5" r="0.8" fill="#5c6bc0"/></svg>`;
+
+  function buildRepasInline(repas) {
+    return `<div class="repas-inline">${repas.map(r => `
+      <div class="food-chip">
+        <div class="food-icon">${r.emoji}</div>
+        <span class="food-label">${r.label.replace(/\n/g,'<br>')}</span>
+      </div>`).join('')}</div>`;
+  }
+
+  function buildRepasGrouped(groups) {
+    return `<div class="repas-group">${groups.map(g => `
+      <div class="repas-group-title">${g.titre}</div>
+      <div class="repas-group-row">${g.items.map(r => `
+        <div class="food-chip">
+          <div class="food-icon">${r.emoji}</div>
+          <span class="food-label">${r.label}</span>
+        </div>`).join('')}
+      </div>`).join('')}</div>`;
+  }
+
+  function buildDots() {
+    return `<div class="day-dots">${days.map((_, i) =>
+      `<div class="dot${i === currentIndex ? ' active' : ''}"></div>`).join('')}</div>`;
+  }
+
+  function renderDay(d) {
+    const siesteLine = d.sieste.fin
+      ? `Début ${d.sieste.debut} &nbsp; Fin ${d.sieste.fin}`
+      : `Début ${d.sieste.debut}`;
+
+    const repasBlock = d.repasGrouped
+      ? buildRepasGrouped(d.repasGrouped)
+      : buildRepasInline(d.repas);
+
+    return `
+      ${buildDots()}
+
+      <!-- JOURNAL -->
+      <div class="section-card" style="margin-top:8px;">
+        <div class="section-label">Journal du jour</div>
+        <div class="journal-inner">
+          <div class="journal-header">
+            <div class="journal-icon">${iconPen}</div>
+            <div>
+              <div class="journal-title">${d.journalTitle}</div>
+              <div class="journal-subtitle">${d.label}</div>
+            </div>
+          </div>
+          <div class="journal-text">${d.journalText}</div>
+          <div class="journal-author">✍️ Rédigé par ${d.auteur}</div>
+        </div>
+      </div>
+
+      <!-- REPAS -->
+      <div class="section-card" style="margin-top:12px;">
+        <div class="section-label">Repas</div>
+        ${repasBlock}
+      </div>
+
+      <!-- SIESTE -->
+      <div class="section-card" style="margin-top:12px;">
+        <div class="section-label">Sieste</div>
+        <div class="sieste-row">
+          <div class="sleep-icon">${iconMoon}</div>
+          <div>
+            <div class="sleep-time">${siesteLine}</div>
+            <div class="sleep-sub">${d.sieste.label}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ÉDUCATRICES -->
+      <div class="section-card" style="margin-top:12px; margin-bottom:0;">
+        <div class="section-label">Éducatrices.teurs</div>
+        <div class="educ-row">
+          <div class="educ-avatar">P</div>
+          <div>
+            <div class="educ-label">Rédigé par :</div>
+            <div class="educ-name">${d.auteur}</div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function updateNav() {
+    document.getElementById('date-display').textContent = days[currentIndex].date;
+    document.getElementById('btn-prev').disabled = currentIndex === 0;
+    document.getElementById('btn-next').disabled = currentIndex === days.length - 1;
+  }
+
+  function navigate(dir) {
+    const next = currentIndex + dir;
+    if (next < 0 || next >= days.length) return;
+
+    const content = document.getElementById('page-content');
+    const outClass = dir > 0 ? 'slide-out-left' : 'slide-out-right';
+    const inClass  = dir > 0 ? 'slide-in-left'  : 'slide-in-right';
+
+    content.classList.add(outClass);
+    setTimeout(() => {
+      currentIndex = next;
+      content.innerHTML = renderDay(days[currentIndex]);
+      updateNav();
+      content.classList.remove(outClass);
+      content.classList.add(inClass);
+      content.scrollTop = 0;
+      window.scrollTo(0, 0);
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          content.classList.remove(inClass);
+        });
+      });
+    }, 180);
+  }
+
+  // ── Touch / swipe support ──
+  let touchStartX = 0;
+  document.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; }, { passive: true });
+  document.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    if (Math.abs(dx) > 60) navigate(dx < 0 ? 1 : -1);
+  }, { passive: true });
+
+  // ── Initial render ──
+  document.getElementById('page-content').innerHTML = renderDay(days[0]);
+  updateNav();
+</script>
 
 </body>
 </html>
